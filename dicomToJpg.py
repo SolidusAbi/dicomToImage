@@ -1,6 +1,7 @@
 import argparse
 import os, sys
 import pydicom as dicom
+import numpy as np
 from PIL import Image
 
 def getDICOMFiles(dicom_dir:str):
@@ -19,7 +20,13 @@ def prepareParser(parser:argparse.ArgumentParser):
 def saveDICOMFilesToImage(dicom_dir:str):
     for dicom_file in getDICOMFiles(dicom_dir):
         ds = dicom.dcmread(os.path.join(dicom_dir, dicom_file))
-        Image.fromarray(ds.pixel_array).save(os.path.join(dicom_dir, dicom_file.replace('.dcm', '.jpg')))
+        np_data = ds.pixel_array 
+        if len(np_data.shape) < 3:
+            np_data = np_data.astype(np.uint32)
+            Image.fromarray(np_data, 'I').save(os.path.join(dicom_dir, dicom_file.replace('.dcm', '.png')))
+        else:
+            Image.fromarray(np_data).save(os.path.join(dicom_dir, dicom_file.replace('.dcm', '.png')))
+        
 
 
 if __name__ == "__main__":
